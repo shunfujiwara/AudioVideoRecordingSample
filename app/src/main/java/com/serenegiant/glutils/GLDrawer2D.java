@@ -34,10 +34,7 @@ import java.nio.FloatBuffer;
  * Helper class to draw to whole view using specific texture and texture matrix
  */
 public class GLDrawer2D {
-  private static final boolean DEBUG = false; // TODO set false on release
-  private static final String TAG = "GLDrawer2D";
-
-  private static final String vss = "" +
+  public static final String VSS = "" +
       "uniform mat4 uMVPMatrix;\n" +
       "uniform mat4 uTexMatrix;\n" +
       "attribute highp vec4 aPosition;\n" +
@@ -49,7 +46,7 @@ public class GLDrawer2D {
       "	vTextureCoord = (uTexMatrix * aTextureCoord).xy;\n" +
       "}\n";
 
-  private static final String fss = "" +
+  public static final String FSS = "" +
       "#extension GL_OES_EGL_image_external : require\n" +
       "precision mediump float;\n" +
       "uniform samplerExternalOES sTexture;\n" +
@@ -58,6 +55,8 @@ public class GLDrawer2D {
       "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
       "}";
 
+  private static final boolean DEBUG = false; // TODO set false on release
+  private static final String TAG = "GLDrawer2D";
   private static final float[] VERTICES = { 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f };
   private static final float[] TEXCOORD = { 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f };
   private static final int FLOAT_SZ = Float.SIZE / 8;
@@ -77,6 +76,14 @@ public class GLDrawer2D {
    * this should be called in GL context
    */
   public GLDrawer2D() {
+    this(VSS, FSS);
+  }
+
+  /**
+   * Constructor
+   * this should be called in GL context
+   */
+  protected GLDrawer2D(String vertexShader, String fragmentShader) {
     pVertex = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
         .order(ByteOrder.nativeOrder())
         .asFloatBuffer();
@@ -88,7 +95,7 @@ public class GLDrawer2D {
     pTexCoord.put(TEXCOORD);
     pTexCoord.flip();
 
-    hProgram = loadShader(vss, fss);
+    hProgram = loadShader(vertexShader, fragmentShader);
     GLES20.glUseProgram(hProgram);
     maPositionLoc = GLES20.glGetAttribLocation(hProgram, "aPosition");
     maTextureCoordLoc = GLES20.glGetAttribLocation(hProgram, "aTextureCoord");
