@@ -37,30 +37,40 @@ public class GLDrawer2D {
   private static final boolean DEBUG = false; // TODO set false on release
   private static final String TAG = "GLDrawer2D";
 
-  private static final String vss = "uniform mat4 uMVPMatrix;\n" + "uniform mat4 uTexMatrix;\n"
-      + "attribute highp vec4 aPosition;\n" + "attribute highp vec4 aTextureCoord;\n"
-      + "varying highp vec2 vTextureCoord;\n" + "\n" + "void main() {\n"
-      + "	gl_Position = uMVPMatrix * aPosition;\n"
-      + "	vTextureCoord = (uTexMatrix * aTextureCoord).xy;\n" + "}\n";
-  private static final String fss =
-      "#extension GL_OES_EGL_image_external : require\n" + "precision mediump float;\n"
-          + "uniform samplerExternalOES sTexture;\n" + "varying highp vec2 vTextureCoord;\n"
-          + "void main() {\n" + "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n" + "}";
+  private static final String vss = "" +
+      "uniform mat4 uMVPMatrix;\n" +
+      "uniform mat4 uTexMatrix;\n" +
+      "attribute highp vec4 aPosition;\n" +
+      "attribute highp vec4 aTextureCoord;\n" +
+      "varying highp vec2 vTextureCoord;\n" +
+      "\n" +
+      "void main() {\n" +
+      "	gl_Position = uMVPMatrix * aPosition;\n" +
+      "	vTextureCoord = (uTexMatrix * aTextureCoord).xy;\n" +
+      "}\n";
+
+  private static final String fss = "" +
+      "#extension GL_OES_EGL_image_external : require\n" +
+      "precision mediump float;\n" +
+      "uniform samplerExternalOES sTexture;\n" +
+      "varying highp vec2 vTextureCoord;\n" +
+      "void main() {\n" +
+      "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
+      "}";
+
   private static final float[] VERTICES = { 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f };
   private static final float[] TEXCOORD = { 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f };
-
+  private static final int FLOAT_SZ = Float.SIZE / 8;
+  private static final int VERTEX_NUM = 4;
+  private static final int VERTEX_SZ = VERTEX_NUM * 2;
   private final FloatBuffer pVertex;
   private final FloatBuffer pTexCoord;
-  private int hProgram;
+  private final float[] mMvpMatrix = new float[16];
   int maPositionLoc;
   int maTextureCoordLoc;
   int muMVPMatrixLoc;
   int muTexMatrixLoc;
-  private final float[] mMvpMatrix = new float[16];
-
-  private static final int FLOAT_SZ = Float.SIZE / 8;
-  private static final int VERTEX_NUM = 4;
-  private static final int VERTEX_SZ = VERTEX_NUM * 2;
+  private int hProgram;
 
   /**
    * Constructor
@@ -93,41 +103,6 @@ public class GLDrawer2D {
         pTexCoord);
     GLES20.glEnableVertexAttribArray(maPositionLoc);
     GLES20.glEnableVertexAttribArray(maTextureCoordLoc);
-  }
-
-  /**
-   * terminatinng, this should be called in GL context
-   */
-  public void release() {
-    if (hProgram >= 0) GLES20.glDeleteProgram(hProgram);
-    hProgram = -1;
-  }
-
-  /**
-   * draw specific texture with specific texture matrix
-   *
-   * @param tex_id texture ID
-   * @param tex_matrix texture matrix、if this is null, the last one use(we don't check size of this
-   * array and needs at least 16 of float)
-   */
-  public void draw(final int tex_id, final float[] tex_matrix) {
-    GLES20.glUseProgram(hProgram);
-    if (tex_matrix != null) GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, tex_matrix, 0);
-    GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMvpMatrix, 0);
-    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-    GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, tex_id);
-    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, VERTEX_NUM);
-    GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
-    GLES20.glUseProgram(0);
-  }
-
-  /**
-   * Set model/view/projection transform matrix
-   */
-  public void setMatrix(final float[] matrix, final int offset) {
-    if ((matrix != null) && (matrix.length >= offset + 16)) {
-      System.arraycopy(matrix, offset, mMvpMatrix, 0, 16);
-    }
   }
 
   /**
@@ -195,5 +170,40 @@ public class GLDrawer2D {
     GLES20.glLinkProgram(program);
 
     return program;
+  }
+
+  /**
+   * terminatinng, this should be called in GL context
+   */
+  public void release() {
+    if (hProgram >= 0) GLES20.glDeleteProgram(hProgram);
+    hProgram = -1;
+  }
+
+  /**
+   * draw specific texture with specific texture matrix
+   *
+   * @param tex_id texture ID
+   * @param tex_matrix texture matrix、if this is null, the last one use(we don't check size of this
+   * array and needs at least 16 of float)
+   */
+  public void draw(final int tex_id, final float[] tex_matrix) {
+    GLES20.glUseProgram(hProgram);
+    if (tex_matrix != null) GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, tex_matrix, 0);
+    GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMvpMatrix, 0);
+    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+    GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, tex_id);
+    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, VERTEX_NUM);
+    GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
+    GLES20.glUseProgram(0);
+  }
+
+  /**
+   * Set model/view/projection transform matrix
+   */
+  public void setMatrix(final float[] matrix, final int offset) {
+    if ((matrix != null) && (matrix.length >= offset + 16)) {
+      System.arraycopy(matrix, offset, mMvpMatrix, 0, 16);
+    }
   }
 }
