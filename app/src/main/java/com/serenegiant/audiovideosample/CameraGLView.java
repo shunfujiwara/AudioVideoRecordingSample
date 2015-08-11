@@ -40,6 +40,7 @@ import android.view.SurfaceHolder;
 import android.view.WindowManager;
 import com.serenegiant.encoder.MediaVideoEncoder;
 import com.serenegiant.glutils.GLDrawer2D;
+import com.serenegiant.glutils.GLGrayscaleFilter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -230,7 +231,8 @@ public final class CameraGLView extends GLSurfaceView {
         parent.mHasSurface = true;
       }
       // create object for preview display
-      mDrawer = new GLDrawer2D();
+      // TODO
+      mDrawer = new GLGrayscaleFilter();
       mDrawer.setMatrix(mMvpMatrix, 0);
     }
 

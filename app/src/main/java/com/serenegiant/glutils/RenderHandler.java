@@ -46,15 +46,20 @@ public final class RenderHandler implements Runnable {
   private boolean mRequestSetEglContext;
   private boolean mRequestRelease;
   private int mRequestDraw;
+  //********************************************************************************
+  //********************************************************************************
+  private EGLBase mEgl;
+  private EGLBase.EglSurface mInputSurface;
+  private GLDrawer2D mDrawer;
 
-  public static final RenderHandler createHandler(final String name) {
+  public static RenderHandler createHandler(final String name) {
     if (DEBUG) Log.v(TAG, "createHandler:");
     final RenderHandler handler = new RenderHandler();
     synchronized (handler.mSync) {
       new Thread(handler, !TextUtils.isEmpty(name) ? name : TAG).start();
       try {
         handler.mSync.wait();
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException ignore) {
       }
     }
     return handler;
@@ -77,7 +82,7 @@ public final class RenderHandler implements Runnable {
       mSync.notifyAll();
       try {
         mSync.wait();
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException ignore) {
       }
     }
   }
@@ -122,16 +127,10 @@ public final class RenderHandler implements Runnable {
       mSync.notifyAll();
       try {
         mSync.wait();
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException ignore) {
       }
     }
   }
-
-  //********************************************************************************
-  //********************************************************************************
-  private EGLBase mEgl;
-  private EGLBase.EglSurface mInputSurface;
-  private GLDrawer2D mDrawer;
 
   @Override public final void run() {
     if (DEBUG) Log.i(TAG, "RenderHandler thread started:");
@@ -178,7 +177,7 @@ public final class RenderHandler implements Runnable {
     if (DEBUG) Log.i(TAG, "RenderHandler thread finished:");
   }
 
-  private final void internalPrepare() {
+  private void internalPrepare() {
     if (DEBUG) Log.i(TAG, "internalPrepare:");
     internalRelease();
     mEgl = new EGLBase(mShard_context, false, mIsRecordable);
@@ -186,12 +185,13 @@ public final class RenderHandler implements Runnable {
     mInputSurface = mEgl.createFromSurface(mSurface);
 
     mInputSurface.makeCurrent();
-    mDrawer = new GLDrawer2D();
+    // TODO
+    mDrawer = new GLGrayscaleFilter();
     mSurface = null;
     mSync.notifyAll();
   }
 
-  private final void internalRelease() {
+  private void internalRelease() {
     if (DEBUG) Log.i(TAG, "internalRelease:");
     if (mInputSurface != null) {
       mInputSurface.release();
