@@ -39,8 +39,8 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
 import com.serenegiant.encoder.MediaVideoEncoder;
+import com.serenegiant.glutils.GLColorInvertFilter;
 import com.serenegiant.glutils.GLDrawer2D;
-import com.serenegiant.glutils.GLPosterizeFilter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -232,7 +232,7 @@ public final class CameraGLView extends GLSurfaceView {
       }
       // create object for preview display
       // TODO
-      mDrawer = new GLPosterizeFilter();
+      mDrawer = new GLColorInvertFilter();
       mDrawer.setMatrix(mMvpMatrix, 0);
     }
 
