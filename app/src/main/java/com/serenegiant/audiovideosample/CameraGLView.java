@@ -101,10 +101,14 @@ public final class CameraGLView extends GLSurfaceView {
   @Override public void onPause() {
     if (DEBUG) Log.v(TAG, "onPause:");
     if (mCameraHandler != null) {
-      // just request stop prviewing
+      // just request stop previewing
       mCameraHandler.stopPreview(false);
     }
     super.onPause();
+  }
+
+  public int getScaleMode() {
+    return mScaleMode;
   }
 
   public void setScaleMode(final int mode) {
@@ -116,10 +120,6 @@ public final class CameraGLView extends GLSurfaceView {
         }
       });
     }
-  }
-
-  public int getScaleMode() {
-    return mScaleMode;
   }
 
   public void setVideoSize(final int width, final int height) {
@@ -195,16 +195,18 @@ public final class CameraGLView extends GLSurfaceView {
       implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener {  // API >= 11
 
     private final WeakReference<CameraGLView> mWeakParent;
+    private final float[] mStMatrix = new float[16];
+    private final float[] mMvpMatrix = new float[16];
     private SurfaceTexture mSTexture;  // API >= 11
     private int hTex;
     private GLDrawer2D mDrawer;
-    private final float[] mStMatrix = new float[16];
-    private final float[] mMvpMatrix = new float[16];
     private MediaVideoEncoder mVideoEncoder;
+    private volatile boolean requesrUpdateTex = false;
+    private boolean flip = true;
 
     public CameraSurfaceRenderer(final CameraGLView parent) {
       if (DEBUG) Log.v(TAG, "CameraSurfaceRenderer:");
-      mWeakParent = new WeakReference<CameraGLView>(parent);
+      mWeakParent = new WeakReference<>(parent);
       Matrix.setIdentityM(mMvpMatrix, 0);
     }
 
@@ -259,7 +261,7 @@ public final class CameraGLView extends GLSurfaceView {
       GLDrawer2D.deleteTex(hTex);
     }
 
-    private final void updateViewport() {
+    private void updateViewport() {
       final CameraGLView parent = mWeakParent.get();
       if (parent != null) {
         final int view_width = parent.getWidth();
@@ -319,9 +321,6 @@ public final class CameraGLView extends GLSurfaceView {
         if (mDrawer != null) mDrawer.setMatrix(mMvpMatrix, 0);
       }
     }
-
-    private volatile boolean requesrUpdateTex = false;
-    private boolean flip = true;
 
     /**
      * drawing to GLSurface
@@ -389,7 +388,7 @@ public final class CameraGLView extends GLSurfaceView {
           try {
             if (DEBUG) Log.d(TAG, "wait for terminating of camera thread");
             wait();
-          } catch (final InterruptedException e) {
+          } catch (final InterruptedException ignore) {
           }
         }
       }
@@ -430,14 +429,14 @@ public final class CameraGLView extends GLSurfaceView {
 
     public CameraThread(final CameraGLView parent) {
       super("Camera thread");
-      mWeakParent = new WeakReference<CameraGLView>(parent);
+      mWeakParent = new WeakReference<>(parent);
     }
 
     public CameraHandler getHandler() {
       synchronized (mReadyFence) {
         try {
           mReadyFence.wait();
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException ignore) {
         }
       }
       return mHandler;
@@ -466,7 +465,7 @@ public final class CameraGLView extends GLSurfaceView {
     /**
      * start camera preview
      */
-    private final void startPreview(final int width, final int height) {
+    private void startPreview(final int width, final int height) {
       if (DEBUG) Log.v(TAG, "startPreview:");
       final CameraGLView parent = mWeakParent.get();
       if ((parent != null) && (mCamera == null)) {
@@ -500,7 +499,7 @@ public final class CameraGLView extends GLSurfaceView {
           // if you want to use other size, you also need to change the recording size.
           params.setPreviewSize(1280, 720);
 /*					final Size preferedSize = params.getPreferredPreviewSizeForVideo();
-					if (preferedSize != null) {
+          if (preferedSize != null) {
 						params.setPreviewSize(preferedSize.width, preferedSize.height);
 					} */
           // rotate camera preview according to the device orientation
@@ -557,7 +556,7 @@ public final class CameraGLView extends GLSurfaceView {
     /**
      * rotate preview screen according to the device orientation
      */
-    private final void setRotation(final Camera.Parameters params) {
+    private void setRotation(final Camera.Parameters params) {
       if (DEBUG) Log.v(TAG, "setRotation:");
       final CameraGLView parent = mWeakParent.get();
       if (parent == null) return;

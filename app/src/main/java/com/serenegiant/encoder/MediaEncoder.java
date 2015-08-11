@@ -30,28 +30,21 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
 public abstract class MediaEncoder implements Runnable {
-  private static final boolean DEBUG = false;  // TODO set false on release
-  private static final String TAG = "MediaEncoder";
-
   protected static final int TIMEOUT_USEC = 10000;  // 10[msec]
   protected static final int MSG_FRAME_AVAILABLE = 1;
   protected static final int MSG_STOP_RECORDING = 9;
-
-  public interface MediaEncoderListener {
-    public void onPrepared(MediaEncoder encoder);
-
-    public void onStopped(MediaEncoder encoder);
-  }
-
+  private static final boolean DEBUG = false;  // TODO set false on release
+  private static final String TAG = "MediaEncoder";
   protected final Object mSync = new Object();
+  /**
+   * Weak refarence of MediaMuxerWarapper instance
+   */
+  protected final WeakReference<MediaMuxerWrapper> mWeakMuxer;
+  protected final MediaEncoderListener mListener;
   /**
    * Flag that indicate this encoder is capturing now.
    */
   protected volatile boolean mIsCapturing;
-  /**
-   * Flag that indicate the frame data will be available soon.
-   */
-  private int mRequestDrain;
   /**
    * Flag to request stop capturing
    */
@@ -73,15 +66,17 @@ public abstract class MediaEncoder implements Runnable {
    */
   protected MediaCodec mMediaCodec;        // API >= 16(Android4.1.2)
   /**
-   * Weak refarence of MediaMuxerWarapper instance
+   * Flag that indicate the frame data will be available soon.
    */
-  protected final WeakReference<MediaMuxerWrapper> mWeakMuxer;
+  private int mRequestDrain;
   /**
    * BufferInfo instance for dequeuing
    */
   private MediaCodec.BufferInfo mBufferInfo;    // API >= 16(Android4.1.2)
-
-  protected final MediaEncoderListener mListener;
+  /**
+   * previous presentationTimeUs for writing
+   */
+  private long prevOutputPTSUs = 0;
 
   public MediaEncoder(final MediaMuxerWrapper muxer, final MediaEncoderListener listener) {
     if (listener == null) throw new NullPointerException("MediaEncoderListener is null");
@@ -380,11 +375,6 @@ public abstract class MediaEncoder implements Runnable {
   }
 
   /**
-   * previous presentationTimeUs for writing
-   */
-  private long prevOutputPTSUs = 0;
-
-  /**
    * get next encoding presentationTimeUs
    */
   protected long getPTSUs() {
@@ -393,5 +383,12 @@ public abstract class MediaEncoder implements Runnable {
     // otherwise muxer fail to write
     if (result < prevOutputPTSUs) result = (prevOutputPTSUs - result) + result;
     return result;
+  }
+
+  public interface MediaEncoderListener {
+
+    void onPrepared(MediaEncoder encoder);
+
+    void onStopped(MediaEncoder encoder);
   }
 }
