@@ -5,7 +5,7 @@ package com.serenegiant.glutils;
  *
  * Created by u1aryz on 2015/08/11.
  */
-public class GLGrayscaleFilter extends GLDrawer2D {
+public class GLGrayscaleFilter extends GLFilter {
 
   public static final String GRAYSCALE_FRAGMENT_SHADER = "" +
       "#extension GL_OES_EGL_image_external : require\n" +
@@ -26,6 +26,6 @@ public class GLGrayscaleFilter extends GLDrawer2D {
       "}";
 
   public GLGrayscaleFilter() {
-    super(VSS, GRAYSCALE_FRAGMENT_SHADER);
+    super(NO_FILTER_VERTEX_SHADER, GRAYSCALE_FRAGMENT_SHADER);
   }
 }

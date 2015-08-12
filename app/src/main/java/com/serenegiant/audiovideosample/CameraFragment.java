@@ -132,10 +132,10 @@ public class CameraFragment extends Fragment {
   @Override public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case R.id.action_posterize:
-        mCameraView.setDrawer(new GLPosterizeFilter());
+        mCameraView.setFilter(new GLPosterizeFilter());
         break;
       case R.id.action_grayscale:
-        mCameraView.setDrawer(new GLGrayscaleFilter());
+        mCameraView.setFilter(new GLGrayscaleFilter());
         break;
     }
     return super.onOptionsItemSelected(item);
@@ -175,7 +175,7 @@ public class CameraFragment extends Fragment {
       if (true) {
         // for video capturing
         new MediaVideoEncoder(mMuxer, mMediaEncoderListener, mCameraView.getVideoWidth(),
-            mCameraView.getVideoHeight());
+            mCameraView.getVideoHeight(), mCameraView.getFilter());
       }
       if (true) {
         // for audio capturing

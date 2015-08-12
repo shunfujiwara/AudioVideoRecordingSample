@@ -5,7 +5,7 @@ package com.serenegiant.glutils;
  *
  * Created by u1aryz on 2015/08/11.
  */
-public class GLPosterizeFilter extends GLDrawer2D {
+public class GLPosterizeFilter extends GLFilter {
 
   public static final String POSTERIZE_FRAGMENT_SHADER = "" +
       "#extension GL_OES_EGL_image_external : require\n" +
@@ -22,6 +22,6 @@ public class GLPosterizeFilter extends GLDrawer2D {
       "}";
 
   public GLPosterizeFilter() {
-    super(VSS, POSTERIZE_FRAGMENT_SHADER);
+    super(NO_FILTER_VERTEX_SHADER, POSTERIZE_FRAGMENT_SHADER);
   }
 }

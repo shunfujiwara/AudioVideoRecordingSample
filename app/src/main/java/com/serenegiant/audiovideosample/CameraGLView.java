@@ -40,6 +40,7 @@ import android.view.SurfaceHolder;
 import android.view.WindowManager;
 import com.serenegiant.encoder.MediaVideoEncoder;
 import com.serenegiant.glutils.GLDrawer2D;
+import com.serenegiant.glutils.GLFilter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
@@ -69,7 +70,7 @@ public final class CameraGLView extends GLSurfaceView {
   private int mVideoWidth, mVideoHeight;
   private int mRotation;
   private int mScaleMode = SCALE_STRETCH_FIT;
-  private GLDrawer2D mDrawer = new GLDrawer2D();
+  private GLFilter mFilter = new GLFilter();
 
   public CameraGLView(final Context context) {
     this(context, null, 0);
@@ -82,7 +83,7 @@ public final class CameraGLView extends GLSurfaceView {
   public CameraGLView(final Context context, final AttributeSet attrs, final int defStyle) {
     super(context, attrs);
     if (DEBUG) Log.v(TAG, "CameraGLView:");
-    mRenderer = new CameraSurfaceRenderer(this, mDrawer);
+    mRenderer = new CameraSurfaceRenderer(this, mFilter.getDrawerForRenderer());
     setEGLContextClientVersion(2);  // GLES 2.0, API >= 8
     setRenderer(mRenderer);
 /*		// the frequency of refreshing of camera preview is at most 15 fps
@@ -90,13 +91,13 @@ public final class CameraGLView extends GLSurfaceView {
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); */
   }
 
-  public GLDrawer2D getDrawer() {
-    return mDrawer;
+  public GLFilter getFilter() {
+    return mFilter;
   }
 
-  public void setDrawer(GLDrawer2D drawer) {
-    mDrawer = drawer;
-    mRenderer.setDrawer(drawer);
+  public void setFilter(GLFilter filter) {
+    mFilter = filter;
+    mRenderer.setDrawer(filter.getDrawerForRenderer());
   }
 
   @Override public void onResume() {

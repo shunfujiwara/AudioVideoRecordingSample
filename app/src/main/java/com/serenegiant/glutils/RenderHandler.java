@@ -52,9 +52,13 @@ public final class RenderHandler implements Runnable {
   private EGLBase.EglSurface mInputSurface;
   private GLDrawer2D mDrawer;
 
-  public static RenderHandler createHandler(final String name) {
+  public RenderHandler(GLDrawer2D drawer) {
+    mDrawer = drawer;
+  }
+
+  public static RenderHandler createHandler(final String name, GLDrawer2D drawer) {
     if (DEBUG) Log.v(TAG, "createHandler:");
-    final RenderHandler handler = new RenderHandler();
+    final RenderHandler handler = new RenderHandler(drawer);
     synchronized (handler.mSync) {
       new Thread(handler, !TextUtils.isEmpty(name) ? name : TAG).start();
       try {
@@ -185,8 +189,6 @@ public final class RenderHandler implements Runnable {
     mInputSurface = mEgl.createFromSurface(mSurface);
 
     mInputSurface.makeCurrent();
-    // TODO
-    mDrawer = new GLColorInvertFilter();
     mDrawer.init();
     mSurface = null;
     mSync.notifyAll();
@@ -200,7 +202,6 @@ public final class RenderHandler implements Runnable {
     }
     if (mDrawer != null) {
       mDrawer.release();
-      mDrawer = null;
     }
     if (mEgl != null) {
       mEgl.release();

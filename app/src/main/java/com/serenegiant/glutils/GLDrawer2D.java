@@ -34,26 +34,6 @@ import java.nio.FloatBuffer;
  * Helper class to draw to whole view using specific texture and texture matrix
  */
 public class GLDrawer2D {
-  public static final String VSS = "" +
-      "uniform mat4 uMVPMatrix;\n" +
-      "uniform mat4 uTexMatrix;\n" +
-      "attribute highp vec4 aPosition;\n" +
-      "attribute highp vec4 aTextureCoord;\n" +
-      "varying highp vec2 vTextureCoord;\n" +
-      "\n" +
-      "void main() {\n" +
-      "	gl_Position = uMVPMatrix * aPosition;\n" +
-      "	vTextureCoord = (uTexMatrix * aTextureCoord).xy;\n" +
-      "}\n";
-
-  public static final String FSS = "" +
-      "#extension GL_OES_EGL_image_external : require\n" +
-      "precision mediump float;\n" +
-      "uniform samplerExternalOES sTexture;\n" +
-      "varying highp vec2 vTextureCoord;\n" +
-      "void main() {\n" +
-      "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
-      "}";
 
   private static final boolean DEBUG = false; // TODO set false on release
   private static final String TAG = "GLDrawer2D";
@@ -73,14 +53,6 @@ public class GLDrawer2D {
 
   private String mVertexShader;
   private String mFragmentShader;
-
-  /**
-   * Constructor
-   * this should be called in GL context
-   */
-  public GLDrawer2D() {
-    this(VSS, FSS);
-  }
 
   /**
    * Constructor

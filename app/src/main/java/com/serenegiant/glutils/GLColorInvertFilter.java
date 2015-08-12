@@ -5,7 +5,7 @@ package com.serenegiant.glutils;
  *
  * Created by u1aryz on 2015/08/11.
  */
-public class GLColorInvertFilter extends GLDrawer2D {
+public class GLColorInvertFilter extends GLFilter {
 
   public static final String COLOR_INVERT_FRAGMENT_SHADER = "" +
       "#extension GL_OES_EGL_image_external : require\n" +
@@ -21,6 +21,6 @@ public class GLColorInvertFilter extends GLDrawer2D {
       "}";
 
   public GLColorInvertFilter() {
-    super(VSS, COLOR_INVERT_FRAGMENT_SHADER);
+    super(NO_FILTER_VERTEX_SHADER, COLOR_INVERT_FRAGMENT_SHADER);
   }
 }
