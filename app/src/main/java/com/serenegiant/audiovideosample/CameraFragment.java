@@ -26,6 +26,9 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -39,13 +42,30 @@ import com.serenegiant.mediaaudiotest.R;
 import java.io.IOException;
 
 public class CameraFragment extends Fragment {
-	private static final boolean DEBUG = false;  // TODO set false on release
+  private static final boolean DEBUG = false;  // TODO set false on release
   private static final String TAG = "CameraFragment";
 
   /**
    * for camera preview display
    */
   private CameraGLView mCameraView;
+  /**
+   * callback methods from encoder
+   */
+  private final MediaEncoder.MediaEncoderListener mMediaEncoderListener =
+      new MediaEncoder.MediaEncoderListener() {
+        @Override public void onPrepared(final MediaEncoder encoder) {
+          if (DEBUG) Log.v(TAG, "onPrepared:encoder=" + encoder);
+          if (encoder instanceof MediaVideoEncoder) {
+            mCameraView.setVideoEncoder((MediaVideoEncoder) encoder);
+          }
+        }
+
+        @Override public void onStopped(final MediaEncoder encoder) {
+          if (DEBUG) Log.v(TAG, "onStopped:encoder=" + encoder);
+          if (encoder instanceof MediaVideoEncoder) mCameraView.setVideoEncoder(null);
+        }
+      };
   /**
    * for scale mode display
    */
@@ -58,9 +78,35 @@ public class CameraFragment extends Fragment {
    * muxer for audio/video recording
    */
   private MediaMuxerWrapper mMuxer;
+  /**
+   * method when touch record button
+   */
+  private final OnClickListener mOnClickListener = new OnClickListener() {
+    @Override public void onClick(final View view) {
+      switch (view.getId()) {
+        case R.id.cameraView:
+          final int scale_mode = (mCameraView.getScaleMode() + 1) % 4;
+          mCameraView.setScaleMode(scale_mode);
+          updateScaleModeText();
+          break;
+        case R.id.record_button:
+          if (mMuxer == null) {
+            startRecording();
+          } else {
+            stopRecording();
+          }
+          break;
+      }
+    }
+  };
 
   public CameraFragment() {
     // need default constructor
+  }
+
+  @Override public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setHasOptionsMenu(true);
   }
 
   @Override public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
@@ -76,6 +122,21 @@ public class CameraFragment extends Fragment {
     return rootView;
   }
 
+  @Override public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    inflater.inflate(R.menu.main, menu);
+    super.onCreateOptionsMenu(menu, inflater);
+  }
+
+  @Override public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      case R.id.action_posterize:
+        break;
+      case R.id.action_grayscale:
+        break;
+    }
+    return super.onOptionsItemSelected(item);
+  }
+
   @Override public void onResume() {
     super.onResume();
     if (DEBUG) Log.v(TAG, "onResume:");
@@ -89,33 +150,11 @@ public class CameraFragment extends Fragment {
     super.onPause();
   }
 
-  /**
-   * method when touch record button
-   */
-  private final OnClickListener mOnClickListener = new OnClickListener() {
-    @Override public void onClick(final View view) {
-      switch (view.getId()) {
-        case R.id.cameraView:
-          final int scale_mode = (mCameraView.getScaleMode() + 1) % 4;
-          mCameraView.setScaleMode(scale_mode);
-          updateScaleModeText();
-          break;
-        case R.id.record_button:
-					if (mMuxer == null) {
-						startRecording();
-					} else {
-						stopRecording();
-					}
-          break;
-      }
-    }
-  };
-
   private void updateScaleModeText() {
     final int scale_mode = mCameraView.getScaleMode();
     mScaleModeView.setText(scale_mode == 0 ? "scale to fit"
-            : (scale_mode == 1 ? "keep aspect(viewport)" : (scale_mode == 2 ? "keep aspect(matrix)"
-                : (scale_mode == 3 ? "keep aspect(crop center)" : ""))));
+        : (scale_mode == 1 ? "keep aspect(viewport)" : (scale_mode == 2 ? "keep aspect(matrix)"
+            : (scale_mode == 3 ? "keep aspect(crop center)" : ""))));
   }
 
   /**
@@ -158,22 +197,4 @@ public class CameraFragment extends Fragment {
       // you should not wait here
     }
   }
-
-  /**
-   * callback methods from encoder
-   */
-  private final MediaEncoder.MediaEncoderListener mMediaEncoderListener =
-      new MediaEncoder.MediaEncoderListener() {
-        @Override public void onPrepared(final MediaEncoder encoder) {
-          if (DEBUG) Log.v(TAG, "onPrepared:encoder=" + encoder);
-					if (encoder instanceof MediaVideoEncoder) {
-						mCameraView.setVideoEncoder((MediaVideoEncoder) encoder);
-					}
-        }
-
-        @Override public void onStopped(final MediaEncoder encoder) {
-          if (DEBUG) Log.v(TAG, "onStopped:encoder=" + encoder);
-          if (encoder instanceof MediaVideoEncoder) mCameraView.setVideoEncoder(null);
-        }
-      };
 }
