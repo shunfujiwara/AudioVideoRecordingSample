@@ -5,7 +5,7 @@ package com.serenegiant.glutils;
  *
  * Created by shunfujiwara on 2015/08/11.
  */
-public class GLArtFilter extends GLDrawer2D {
+public class GLArtFilter extends GLFilter {
 
   public static final String ART_FRAGMENT_SHADER = "" +
       "#extension GL_OES_EGL_image_external : require\n" +
@@ -45,6 +45,6 @@ public class GLArtFilter extends GLDrawer2D {
       "}";
 
   public GLArtFilter() {
-    super(VSS, ART_FRAGMENT_SHADER);
+    super(NO_FILTER_VERTEX_SHADER, ART_FRAGMENT_SHADER);
   }
 }
