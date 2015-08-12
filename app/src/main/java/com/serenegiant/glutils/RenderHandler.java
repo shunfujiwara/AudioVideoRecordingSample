@@ -187,6 +187,7 @@ public final class RenderHandler implements Runnable {
     mInputSurface.makeCurrent();
     // TODO
     mDrawer = new GLColorInvertFilter();
+    mDrawer.init();
     mSurface = null;
     mSync.notifyAll();
   }

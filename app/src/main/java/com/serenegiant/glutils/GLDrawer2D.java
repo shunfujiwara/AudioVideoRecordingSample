@@ -62,14 +62,17 @@ public class GLDrawer2D {
   private static final int FLOAT_SZ = Float.SIZE / 8;
   private static final int VERTEX_NUM = 4;
   private static final int VERTEX_SZ = VERTEX_NUM * 2;
-  private final FloatBuffer pVertex;
-  private final FloatBuffer pTexCoord;
   private final float[] mMvpMatrix = new float[16];
   int maPositionLoc;
   int maTextureCoordLoc;
   int muMVPMatrixLoc;
   int muTexMatrixLoc;
+  private FloatBuffer pVertex;
+  private FloatBuffer pTexCoord;
   private int hProgram;
+
+  private String mVertexShader;
+  private String mFragmentShader;
 
   /**
    * Constructor
@@ -84,32 +87,8 @@ public class GLDrawer2D {
    * this should be called in GL context
    */
   protected GLDrawer2D(String vertexShader, String fragmentShader) {
-    pVertex = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
-        .order(ByteOrder.nativeOrder())
-        .asFloatBuffer();
-    pVertex.put(VERTICES);
-    pVertex.flip();
-    pTexCoord = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
-        .order(ByteOrder.nativeOrder())
-        .asFloatBuffer();
-    pTexCoord.put(TEXCOORD);
-    pTexCoord.flip();
-
-    hProgram = loadShader(vertexShader, fragmentShader);
-    GLES20.glUseProgram(hProgram);
-    maPositionLoc = GLES20.glGetAttribLocation(hProgram, "aPosition");
-    maTextureCoordLoc = GLES20.glGetAttribLocation(hProgram, "aTextureCoord");
-    muMVPMatrixLoc = GLES20.glGetUniformLocation(hProgram, "uMVPMatrix");
-    muTexMatrixLoc = GLES20.glGetUniformLocation(hProgram, "uTexMatrix");
-
-    Matrix.setIdentityM(mMvpMatrix, 0);
-    GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMvpMatrix, 0);
-    GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, mMvpMatrix, 0);
-    GLES20.glVertexAttribPointer(maPositionLoc, 2, GLES20.GL_FLOAT, false, VERTEX_SZ, pVertex);
-    GLES20.glVertexAttribPointer(maTextureCoordLoc, 2, GLES20.GL_FLOAT, false, VERTEX_SZ,
-        pTexCoord);
-    GLES20.glEnableVertexAttribArray(maPositionLoc);
-    GLES20.glEnableVertexAttribArray(maTextureCoordLoc);
+    mVertexShader = vertexShader;
+    mFragmentShader = fragmentShader;
   }
 
   /**
@@ -179,12 +158,45 @@ public class GLDrawer2D {
     return program;
   }
 
+  public void init() {
+    pVertex = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
+        .order(ByteOrder.nativeOrder())
+        .asFloatBuffer();
+    pVertex.put(VERTICES);
+    pVertex.flip();
+    pTexCoord = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
+        .order(ByteOrder.nativeOrder())
+        .asFloatBuffer();
+    pTexCoord.put(TEXCOORD);
+    pTexCoord.flip();
+
+    hProgram = loadShader(mVertexShader, mFragmentShader);
+    GLES20.glUseProgram(hProgram);
+    maPositionLoc = GLES20.glGetAttribLocation(hProgram, "aPosition");
+    maTextureCoordLoc = GLES20.glGetAttribLocation(hProgram, "aTextureCoord");
+    muMVPMatrixLoc = GLES20.glGetUniformLocation(hProgram, "uMVPMatrix");
+    muTexMatrixLoc = GLES20.glGetUniformLocation(hProgram, "uTexMatrix");
+
+    Matrix.setIdentityM(mMvpMatrix, 0);
+    GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMvpMatrix, 0);
+    GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, mMvpMatrix, 0);
+    GLES20.glVertexAttribPointer(maPositionLoc, 2, GLES20.GL_FLOAT, false, VERTEX_SZ, pVertex);
+    GLES20.glVertexAttribPointer(maTextureCoordLoc, 2, GLES20.GL_FLOAT, false, VERTEX_SZ,
+        pTexCoord);
+    GLES20.glEnableVertexAttribArray(maPositionLoc);
+    GLES20.glEnableVertexAttribArray(maTextureCoordLoc);
+  }
+
   /**
    * terminatinng, this should be called in GL context
    */
   public void release() {
     if (hProgram >= 0) GLES20.glDeleteProgram(hProgram);
     hProgram = -1;
+  }
+
+  public int getProgram() {
+    return hProgram;
   }
 
   /**

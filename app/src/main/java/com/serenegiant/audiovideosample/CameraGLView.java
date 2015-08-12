@@ -39,11 +39,12 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
 import com.serenegiant.encoder.MediaVideoEncoder;
-import com.serenegiant.glutils.GLColorInvertFilter;
 import com.serenegiant.glutils.GLDrawer2D;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -68,6 +69,7 @@ public final class CameraGLView extends GLSurfaceView {
   private int mVideoWidth, mVideoHeight;
   private int mRotation;
   private int mScaleMode = SCALE_STRETCH_FIT;
+  private GLDrawer2D mDrawer = new GLDrawer2D();
 
   public CameraGLView(final Context context) {
     this(context, null, 0);
@@ -80,12 +82,21 @@ public final class CameraGLView extends GLSurfaceView {
   public CameraGLView(final Context context, final AttributeSet attrs, final int defStyle) {
     super(context, attrs);
     if (DEBUG) Log.v(TAG, "CameraGLView:");
-    mRenderer = new CameraSurfaceRenderer(this);
+    mRenderer = new CameraSurfaceRenderer(this, mDrawer);
     setEGLContextClientVersion(2);  // GLES 2.0, API >= 8
     setRenderer(mRenderer);
 /*		// the frequency of refreshing of camera preview is at most 15 fps
     // and RENDERMODE_WHEN_DIRTY is better to reduce power consumption
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); */
+  }
+
+  public GLDrawer2D getDrawer() {
+    return mDrawer;
+  }
+
+  public void setDrawer(GLDrawer2D drawer) {
+    mDrawer = drawer;
+    mRenderer.setDrawer(drawer);
   }
 
   @Override public void onResume() {
@@ -198,6 +209,7 @@ public final class CameraGLView extends GLSurfaceView {
     private final WeakReference<CameraGLView> mWeakParent;
     private final float[] mStMatrix = new float[16];
     private final float[] mMvpMatrix = new float[16];
+    private final Queue<Runnable> mRunOnDraw = new LinkedList<>();
     private SurfaceTexture mSTexture;  // API >= 11
     private int hTex;
     private GLDrawer2D mDrawer;
@@ -205,10 +217,39 @@ public final class CameraGLView extends GLSurfaceView {
     private volatile boolean requestUpdateTex = false;
     private boolean flip = true;
 
-    public CameraSurfaceRenderer(final CameraGLView parent) {
+    public CameraSurfaceRenderer(final CameraGLView parent, GLDrawer2D drawer) {
       if (DEBUG) Log.v(TAG, "CameraSurfaceRenderer:");
       mWeakParent = new WeakReference<>(parent);
       Matrix.setIdentityM(mMvpMatrix, 0);
+      mDrawer = drawer;
+    }
+
+    protected void runOnDraw(final Runnable runnable) {
+      synchronized (mRunOnDraw) {
+        mRunOnDraw.add(runnable);
+      }
+    }
+
+    private void runAll(Queue<Runnable> queue) {
+      synchronized (queue) {
+        while (!queue.isEmpty()) {
+          queue.poll().run();
+        }
+      }
+    }
+
+    public void setDrawer(final GLDrawer2D drawer) {
+      runOnDraw(new Runnable() {
+        @Override public void run() {
+          GLDrawer2D old = mDrawer;
+          mDrawer = drawer;
+          if (old != null) {
+            old.release();
+          }
+          mDrawer.init();
+          GLES20.glUseProgram(mDrawer.getProgram());
+        }
+      });
     }
 
     @Override public void onSurfaceCreated(final GL10 unused, final EGLConfig config) {
@@ -219,7 +260,7 @@ public final class CameraGLView extends GLSurfaceView {
       if (!extensions.contains("OES_EGL_image_external")) {
         throw new RuntimeException("This system does not support OES_EGL_image_external.");
       }
-      // create textur ID
+      // create texture ID
       hTex = GLDrawer2D.initTex();
       // create SurfaceTexture with texture ID.
       mSTexture = new SurfaceTexture(hTex);
@@ -230,9 +271,8 @@ public final class CameraGLView extends GLSurfaceView {
       if (parent != null) {
         parent.mHasSurface = true;
       }
-      // create object for preview display
-      // TODO
-      mDrawer = new GLColorInvertFilter();
+
+      mDrawer.init();
       mDrawer.setMatrix(mMvpMatrix, 0);
     }
 
@@ -341,6 +381,8 @@ public final class CameraGLView extends GLSurfaceView {
         // get texture matrix
         mSTexture.getTransformMatrix(mStMatrix);
       }
+
+      runAll(mRunOnDraw);
       // draw to preview screen
       mDrawer.draw(hTex, mStMatrix);
       flip = !flip;

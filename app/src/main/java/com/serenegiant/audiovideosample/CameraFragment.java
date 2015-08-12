@@ -38,6 +38,8 @@ import com.serenegiant.encoder.MediaAudioEncoder;
 import com.serenegiant.encoder.MediaEncoder;
 import com.serenegiant.encoder.MediaMuxerWrapper;
 import com.serenegiant.encoder.MediaVideoEncoder;
+import com.serenegiant.glutils.GLGrayscaleFilter;
+import com.serenegiant.glutils.GLPosterizeFilter;
 import com.serenegiant.mediaaudiotest.R;
 import java.io.IOException;
 
@@ -130,8 +132,10 @@ public class CameraFragment extends Fragment {
   @Override public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case R.id.action_posterize:
+        mCameraView.setDrawer(new GLPosterizeFilter());
         break;
       case R.id.action_grayscale:
+        mCameraView.setDrawer(new GLGrayscaleFilter());
         break;
     }
     return super.onOptionsItemSelected(item);
