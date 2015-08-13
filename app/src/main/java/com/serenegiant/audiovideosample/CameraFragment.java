@@ -175,7 +175,7 @@ public class CameraFragment extends Fragment {
       if (true) {
         // for video capturing
         new MediaVideoEncoder(mMuxer, mMediaEncoderListener, mCameraView.getVideoWidth(),
-            mCameraView.getVideoHeight());
+            mCameraView.getVideoHeight(), mCameraView.getDrawer());
       }
       if (true) {
         // for audio capturing

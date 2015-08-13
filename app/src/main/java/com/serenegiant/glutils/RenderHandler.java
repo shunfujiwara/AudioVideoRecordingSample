@@ -51,10 +51,15 @@ public final class RenderHandler implements Runnable {
   private EGLBase mEgl;
   private EGLBase.EglSurface mInputSurface;
   private GLDrawer2D mDrawer;
+  private int mProgramId;
 
-  public static RenderHandler createHandler(final String name) {
+  public RenderHandler(GLDrawer2D drawer) {
+    mDrawer = drawer;
+  }
+
+  public static RenderHandler createHandler(final String name, GLDrawer2D drawer) {
     if (DEBUG) Log.v(TAG, "createHandler:");
-    final RenderHandler handler = new RenderHandler();
+    final RenderHandler handler = new RenderHandler(drawer);
     synchronized (handler.mSync) {
       new Thread(handler, !TextUtils.isEmpty(name) ? name : TAG).start();
       try {
@@ -156,7 +161,7 @@ public final class RenderHandler implements Runnable {
       if (localRequestDraw) {
         if ((mEgl != null) && mTexId >= 0) {
           mInputSurface.makeCurrent();
-          mDrawer.draw(mTexId, mTexMatrix);
+          mDrawer.draw(mProgramId, mTexId, mTexMatrix);
           mInputSurface.swap();
         }
       } else {
@@ -185,9 +190,7 @@ public final class RenderHandler implements Runnable {
     mInputSurface = mEgl.createFromSurface(mSurface);
 
     mInputSurface.makeCurrent();
-    // TODO
-    mDrawer = new GLColorInvertFilter();
-    mDrawer.init();
+    mProgramId = mDrawer.init();
     mSurface = null;
     mSync.notifyAll();
   }
@@ -199,8 +202,7 @@ public final class RenderHandler implements Runnable {
       mInputSurface = null;
     }
     if (mDrawer != null) {
-      mDrawer.release();
-      mDrawer = null;
+      mDrawer.release(mProgramId);
     }
     if (mEgl != null) {
       mEgl.release();

@@ -158,7 +158,7 @@ public class GLDrawer2D {
     return program;
   }
 
-  public void init() {
+  public int init() {
     pVertex = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
         .order(ByteOrder.nativeOrder())
         .asFloatBuffer();
@@ -185,6 +185,7 @@ public class GLDrawer2D {
         pTexCoord);
     GLES20.glEnableVertexAttribArray(maPositionLoc);
     GLES20.glEnableVertexAttribArray(maTextureCoordLoc);
+    return hProgram;
   }
 
   /**
@@ -193,6 +194,12 @@ public class GLDrawer2D {
   public void release() {
     if (hProgram >= 0) GLES20.glDeleteProgram(hProgram);
     hProgram = -1;
+  }
+
+  public void release(int programId) {
+    if (programId >= 0) {
+      GLES20.glDeleteProgram(programId);
+    }
   }
 
   public int getProgram() {
@@ -208,6 +215,17 @@ public class GLDrawer2D {
    */
   public void draw(final int texId, final float[] texMatrix) {
     GLES20.glUseProgram(hProgram);
+    if (texMatrix != null) GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);
+    GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMvpMatrix, 0);
+    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+    GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId);
+    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, VERTEX_NUM);
+    GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
+    GLES20.glUseProgram(0);
+  }
+
+  public void draw(final int programId, final int texId, final float[] texMatrix) {
+    GLES20.glUseProgram(programId);
     if (texMatrix != null) GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);
     GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMvpMatrix, 0);
     GLES20.glActiveTexture(GLES20.GL_TEXTURE0);

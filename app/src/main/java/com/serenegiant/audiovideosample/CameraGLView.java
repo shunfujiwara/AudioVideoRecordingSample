@@ -216,6 +216,7 @@ public final class CameraGLView extends GLSurfaceView {
     private MediaVideoEncoder mVideoEncoder;
     private volatile boolean requestUpdateTex = false;
     private boolean flip = true;
+    private int mProgramId;
 
     public CameraSurfaceRenderer(final CameraGLView parent, GLDrawer2D drawer) {
       if (DEBUG) Log.v(TAG, "CameraSurfaceRenderer:");
@@ -244,10 +245,10 @@ public final class CameraGLView extends GLSurfaceView {
           GLDrawer2D old = mDrawer;
           mDrawer = drawer;
           if (old != null) {
-            old.release();
+            old.release(mProgramId);
           }
-          mDrawer.init();
-          GLES20.glUseProgram(mDrawer.getProgram());
+          mProgramId = mDrawer.init();
+          GLES20.glUseProgram(mProgramId);
         }
       });
     }
@@ -272,7 +273,7 @@ public final class CameraGLView extends GLSurfaceView {
         parent.mHasSurface = true;
       }
 
-      mDrawer.init();
+      mProgramId = mDrawer.init();
       mDrawer.setMatrix(mMvpMatrix, 0);
     }
 
@@ -293,8 +294,7 @@ public final class CameraGLView extends GLSurfaceView {
     public void onSurfaceDestroyed() {
       if (DEBUG) Log.v(TAG, "onSurfaceDestroyed:");
       if (mDrawer != null) {
-        mDrawer.release();
-        mDrawer = null;
+        mDrawer.release(mProgramId);
       }
       if (mSTexture != null) {
         mSTexture.release();
@@ -384,7 +384,7 @@ public final class CameraGLView extends GLSurfaceView {
 
       runAll(mRunOnDraw);
       // draw to preview screen
-      mDrawer.draw(hTex, mStMatrix);
+      mDrawer.draw(mProgramId, hTex, mStMatrix);
       flip = !flip;
       if (flip) {  // ~30fps
         synchronized (this) {
