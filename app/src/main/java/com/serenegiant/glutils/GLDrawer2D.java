@@ -188,7 +188,7 @@ public class GLDrawer2D {
   }
 
   /**
-   * terminatinng, this should be called in GL context
+   * terminating, this should be called in GL context
    */
   public void release() {
     if (hProgram >= 0) GLES20.glDeleteProgram(hProgram);
@@ -202,16 +202,16 @@ public class GLDrawer2D {
   /**
    * draw specific texture with specific texture matrix
    *
-   * @param tex_id texture ID
-   * @param tex_matrix texture matrix、if this is null, the last one use(we don't check size of this
+   * @param texId texture ID
+   * @param texMatrix texture matrix、if this is null, the last one use(we don't check size of this
    * array and needs at least 16 of float)
    */
-  public void draw(final int tex_id, final float[] tex_matrix) {
+  public void draw(final int texId, final float[] texMatrix) {
     GLES20.glUseProgram(hProgram);
-    if (tex_matrix != null) GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, tex_matrix, 0);
+    if (texMatrix != null) GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);
     GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMvpMatrix, 0);
     GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-    GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, tex_id);
+    GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId);
     GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, VERTEX_NUM);
     GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
     GLES20.glUseProgram(0);
