@@ -29,6 +29,7 @@ import android.util.Log;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.LinkedList;
 
 /**
  * Helper class to draw to whole view using specific texture and texture matrix
@@ -64,6 +65,7 @@ public class GLDrawer2D {
   private static final int VERTEX_NUM = 4;
   private static final int VERTEX_SZ = VERTEX_NUM * 2;
   private final float[] mMvpMatrix = new float[16];
+  private final LinkedList<Runnable> mRunOnDraw = new LinkedList<>();
   int maPositionLoc;
   int maTextureCoordLoc;
   int muMVPMatrixLoc;
@@ -71,7 +73,6 @@ public class GLDrawer2D {
   private FloatBuffer pVertex;
   private FloatBuffer pTexCoord;
   private int hProgram;
-
   private String mVertexShader;
   private String mFragmentShader;
 
@@ -160,6 +161,8 @@ public class GLDrawer2D {
   }
 
   public int init() {
+    onInit();
+
     pVertex = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
         .order(ByteOrder.nativeOrder())
         .asFloatBuffer();
@@ -187,6 +190,9 @@ public class GLDrawer2D {
     GLES20.glEnableVertexAttribArray(maPositionLoc);
     GLES20.glEnableVertexAttribArray(maTextureCoordLoc);
     return hProgram;
+  }
+
+  protected void onInit() {
   }
 
   /**
@@ -253,6 +259,12 @@ public class GLDrawer2D {
   public void setMatrix(final float[] matrix, final int offset) {
     if ((matrix != null) && (matrix.length >= offset + 16)) {
       System.arraycopy(matrix, offset, mMvpMatrix, 0, 16);
+    }
+  }
+
+  protected void runOnDraw(final Runnable runnable) {
+    synchronized (mRunOnDraw) {
+      mRunOnDraw.addLast(runnable);
     }
   }
 }
