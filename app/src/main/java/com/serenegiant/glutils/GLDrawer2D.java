@@ -91,6 +91,17 @@ public class GLDrawer2D {
   protected GLDrawer2D(String vertexShader, String fragmentShader) {
     mVertexShader = vertexShader;
     mFragmentShader = fragmentShader;
+
+    pVertex = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
+        .order(ByteOrder.nativeOrder())
+        .asFloatBuffer();
+    pVertex.put(VERTICES);
+    pVertex.flip();
+    pTexCoord = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
+        .order(ByteOrder.nativeOrder())
+        .asFloatBuffer();
+    pTexCoord.put(TEXCOORD);
+    pTexCoord.flip();
   }
 
   /**
@@ -162,17 +173,6 @@ public class GLDrawer2D {
 
   public int init() {
     onInit();
-
-    pVertex = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
-        .order(ByteOrder.nativeOrder())
-        .asFloatBuffer();
-    pVertex.put(VERTICES);
-    pVertex.flip();
-    pTexCoord = ByteBuffer.allocateDirect(VERTEX_SZ * FLOAT_SZ)
-        .order(ByteOrder.nativeOrder())
-        .asFloatBuffer();
-    pTexCoord.put(TEXCOORD);
-    pTexCoord.flip();
 
     hProgram = loadShader(mVertexShader, mFragmentShader);
     GLES20.glUseProgram(hProgram);
