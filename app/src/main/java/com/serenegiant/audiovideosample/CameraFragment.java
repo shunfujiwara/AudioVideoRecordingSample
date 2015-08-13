@@ -38,6 +38,9 @@ import com.serenegiant.encoder.MediaAudioEncoder;
 import com.serenegiant.encoder.MediaEncoder;
 import com.serenegiant.encoder.MediaMuxerWrapper;
 import com.serenegiant.encoder.MediaVideoEncoder;
+import com.serenegiant.glutils.GL1977Filter;
+import com.serenegiant.glutils.GLArtFilter;
+import com.serenegiant.glutils.GLBloomFilter;
 import com.serenegiant.glutils.GLGrayscaleFilter;
 import com.serenegiant.glutils.GLPosterizeFilter;
 import com.serenegiant.mediaaudiotest.R;
@@ -136,6 +139,15 @@ public class CameraFragment extends Fragment {
         break;
       case R.id.action_grayscale:
         mCameraView.setDrawer(new GLGrayscaleFilter());
+        break;
+      case R.id.action_art:
+        mCameraView.setDrawer(new GLArtFilter());
+        break;
+      case R.id.action_1977:
+        mCameraView.setDrawer(new GL1977Filter());
+        break;
+      case R.id.action_bloom:
+        mCameraView.setDrawer(new GLBloomFilter());
         break;
     }
     return super.onOptionsItemSelected(item);
