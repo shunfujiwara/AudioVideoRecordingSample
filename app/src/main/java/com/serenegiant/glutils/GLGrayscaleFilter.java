@@ -11,7 +11,7 @@ public class GLGrayscaleFilter extends GLDrawer2D {
       "#extension GL_OES_EGL_image_external : require\n" +
       "precision highp float;\n" +
       "\n" +
-      "varying vec2 vTextureCoord;\n" +
+      "varying vec2 textureCoordinate;\n" +
       "\n" +
       "uniform samplerExternalOES inputImageTexture;\n" +
       "\n" +
@@ -19,7 +19,7 @@ public class GLGrayscaleFilter extends GLDrawer2D {
       "\n" +
       "void main()\n" +
       "{\n" +
-      "  lowp vec4 textureColor = texture2D(inputImageTexture, vTextureCoord);\n" +
+      "  lowp vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
       "  float luminance = dot(textureColor.rgb, W);\n" +
       "\n" +
       "  gl_FragColor = vec4(vec3(luminance), textureColor.a);\n" +

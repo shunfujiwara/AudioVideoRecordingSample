@@ -9,13 +9,13 @@ public class GLBloomFilter extends GLDrawer2D {
 
   public static final String POSTERIZE_FRAGMENT_SHADER = "" +
       "#extension GL_OES_EGL_image_external : require\n" +
-      "varying highp vec2 vTextureCoord;\n" +
+      "varying highp vec2 textureCoordinate;\n" +
       "uniform samplerExternalOES inputImageTexture;\n" +
       "\n" +
       "void main()\n" +
       "{\n" +
       "     vec4 sum = vec4(0);\n" +
-      "     vec2 texcoord = vTextureCoord;\n" +
+      "     vec2 texcoord = textureCoordinate;\n" +
       "     \n" +
       "     for( int i= -4 ;i < 4; i++)\n" +
       "     {\n" +

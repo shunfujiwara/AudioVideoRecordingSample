@@ -10,7 +10,7 @@ public class GLArtFilter extends GLDrawer2D {
   public static final String ART_FRAGMENT_SHADER = "" +
       "#extension GL_OES_EGL_image_external : require\n" +
       "\n" +
-      "varying highp vec2 vTextureCoord;\n" +
+      "varying highp vec2 textureCoordinate;\n" +
       "uniform samplerExternalOES inputImageTexture;\n" +
       "\n" +
       "float level( in float value, in float min, in float max ) {\n" +
@@ -23,7 +23,7 @@ public class GLArtFilter extends GLDrawer2D {
       "\n" +
       "void main()\n" +
       "{\n" +
-      "     vec4 color = texture2D( inputImageTexture, vTextureCoord );\n" +
+      "     vec4 color = texture2D( inputImageTexture, textureCoordinate );\n" +
       "     float r = color.r;\n" +
       "     float g = color.g;\n" +
       "     float b = color.b;\n" +

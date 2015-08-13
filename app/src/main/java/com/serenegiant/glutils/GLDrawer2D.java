@@ -41,20 +41,21 @@ public class GLDrawer2D {
       "uniform mat4 uTexMatrix;\n" +
       "attribute highp vec4 aPosition;\n" +
       "attribute highp vec4 aTextureCoord;\n" +
-      "varying highp vec2 vTextureCoord;\n" +
+      "varying highp vec2 textureCoordinate;\n" +
       "\n" +
       "void main() {\n" +
-      "	gl_Position = uMVPMatrix * aPosition;\n" +
-      "	vTextureCoord = (uTexMatrix * aTextureCoord).xy;\n" +
+      "	   gl_Position = uMVPMatrix * aPosition;\n" +
+      "	   textureCoordinate = (uTexMatrix * aTextureCoord).xy;\n" +
       "}\n";
 
   public static final String NO_FILTER_FRAGMENT_SHADER = "" +
       "#extension GL_OES_EGL_image_external : require\n" +
       "precision mediump float;\n" +
-      "uniform samplerExternalOES sTexture;\n" +
-      "varying highp vec2 vTextureCoord;\n" +
+      "uniform samplerExternalOES inputImageTexture;\n" +
+      "varying highp vec2 textureCoordinate;\n" +
+      "\n" +
       "void main() {\n" +
-      "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
+      "    gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
       "}";
 
   private static final boolean DEBUG = false; // TODO set false on release
