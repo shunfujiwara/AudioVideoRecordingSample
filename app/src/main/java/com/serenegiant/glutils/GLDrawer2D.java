@@ -172,9 +172,9 @@ public class GLDrawer2D {
   }
 
   public int init() {
-    onInit();
-
     hProgram = loadShader(mVertexShader, mFragmentShader);
+    onInit(hProgram);
+
     GLES20.glUseProgram(hProgram);
     maPositionLoc = GLES20.glGetAttribLocation(hProgram, "aPosition");
     maTextureCoordLoc = GLES20.glGetAttribLocation(hProgram, "aTextureCoord");
@@ -192,7 +192,7 @@ public class GLDrawer2D {
     return hProgram;
   }
 
-  protected void onInit() {
+  protected void onInit(int programId) {
   }
 
   /**
