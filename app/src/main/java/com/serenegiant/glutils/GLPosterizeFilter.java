@@ -22,6 +22,6 @@ public class GLPosterizeFilter extends GLDrawer2D {
       "}";
 
   public GLPosterizeFilter() {
-    super(VSS, POSTERIZE_FRAGMENT_SHADER);
+    super(NO_FILTER_VERTEX_SHADER, POSTERIZE_FRAGMENT_SHADER);
   }
 }

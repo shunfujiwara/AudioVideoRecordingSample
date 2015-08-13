@@ -21,6 +21,6 @@ public class GLColorInvertFilter extends GLDrawer2D {
       "}";
 
   public GLColorInvertFilter() {
-    super(VSS, COLOR_INVERT_FRAGMENT_SHADER);
+    super(NO_FILTER_VERTEX_SHADER, COLOR_INVERT_FRAGMENT_SHADER);
   }
 }

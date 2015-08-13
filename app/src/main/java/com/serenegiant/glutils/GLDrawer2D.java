@@ -34,7 +34,8 @@ import java.nio.FloatBuffer;
  * Helper class to draw to whole view using specific texture and texture matrix
  */
 public class GLDrawer2D {
-  public static final String VSS = "" +
+
+  public static final String NO_FILTER_VERTEX_SHADER = "" +
       "uniform mat4 uMVPMatrix;\n" +
       "uniform mat4 uTexMatrix;\n" +
       "attribute highp vec4 aPosition;\n" +
@@ -46,7 +47,7 @@ public class GLDrawer2D {
       "	vTextureCoord = (uTexMatrix * aTextureCoord).xy;\n" +
       "}\n";
 
-  public static final String FSS = "" +
+  public static final String NO_FILTER_FRAGMENT_SHADER = "" +
       "#extension GL_OES_EGL_image_external : require\n" +
       "precision mediump float;\n" +
       "uniform samplerExternalOES sTexture;\n" +
@@ -79,7 +80,7 @@ public class GLDrawer2D {
    * this should be called in GL context
    */
   public GLDrawer2D() {
-    this(VSS, FSS);
+    this(NO_FILTER_VERTEX_SHADER, NO_FILTER_FRAGMENT_SHADER);
   }
 
   /**
@@ -191,18 +192,21 @@ public class GLDrawer2D {
   /**
    * terminating, this should be called in GL context
    */
-  public void release() {
+  @Deprecated public void release() {
     if (hProgram >= 0) GLES20.glDeleteProgram(hProgram);
     hProgram = -1;
   }
 
+  /**
+   * terminating, this should be called in GL context
+   */
   public void release(int programId) {
     if (programId >= 0) {
       GLES20.glDeleteProgram(programId);
     }
   }
 
-  public int getProgram() {
+  @Deprecated public int getProgram() {
     return hProgram;
   }
 
@@ -213,7 +217,7 @@ public class GLDrawer2D {
    * @param texMatrix texture matrix、if this is null, the last one use(we don't check size of this
    * array and needs at least 16 of float)
    */
-  public void draw(final int texId, final float[] texMatrix) {
+  @Deprecated public void draw(final int texId, final float[] texMatrix) {
     GLES20.glUseProgram(hProgram);
     if (texMatrix != null) GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);
     GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMvpMatrix, 0);
@@ -224,6 +228,14 @@ public class GLDrawer2D {
     GLES20.glUseProgram(0);
   }
 
+  /**
+   * draw specific texture with specific texture matrix
+   *
+   * @param programId program ID
+   * @param texId texture ID
+   * @param texMatrix texture matrix、if this is null, the last one use(we don't check size of this
+   * array and needs at least 16 of float)
+   */
   public void draw(final int programId, final int texId, final float[] texMatrix) {
     GLES20.glUseProgram(programId);
     if (texMatrix != null) GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);

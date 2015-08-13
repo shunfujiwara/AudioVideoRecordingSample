@@ -26,6 +26,6 @@ public class GLGrayscaleFilter extends GLDrawer2D {
       "}";
 
   public GLGrayscaleFilter() {
-    super(VSS, GRAYSCALE_FRAGMENT_SHADER);
+    super(NO_FILTER_VERTEX_SHADER, GRAYSCALE_FRAGMENT_SHADER);
   }
 }
